@@ -9,3 +9,15 @@ exports.handleError22P02 = (err, req, res, next) => {
     res.status(400).send({ msg: 'Bad request' });
   } else next(err);
 };
+
+exports.handleError23502 = (err, req, res, next) => {
+  if (err.code === '23502') {
+    res.status(400).send({ msg: 'Bad request' });
+  } else next(err);
+};
+
+exports.handleError42703 = (err, req, res, next) => {
+  if (err.code === '42703') {
+    res.status(400).send({ msg: 'Queried column does not exist' });
+  } else next(err);
+};

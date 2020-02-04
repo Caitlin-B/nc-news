@@ -1,10 +1,12 @@
 process.env.NODE_ENV = 'test';
 const app = require('../app');
 const request = require('supertest');
-const { expect } = require('chai');
+const chai = require('chai');
+const chaiSorted = require('chai-sorted');
+const { expect } = chai;
 const connection = require('../db/connection');
 
-describe('/api', () => {});
+chai.use(chaiSorted);
 
 describe('/api', () => {
   beforeEach(() => connection.seed.run());
@@ -46,61 +48,289 @@ describe('/api', () => {
         });
     });
   });
-  describe('/articles/:article_id', () => {
-    it('GET 200: returns status 200 and and an object of the requested article', () => {
+  describe('/articles', () => {
+    it('GET 200: returns all articles with comment count, sorted by date in ascending order by default', () => {
       return request(app)
-        .get('/api/articles/1')
+        .get('/api/articles')
         .expect(200)
         .then(({ body }) => {
-          expect(body.article).to.have.all.keys(
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.sortedBy('created_at');
+        });
+    });
+    it('GET 200: returns article sorted by sort_by queried column and queried order (asc/desc)', () => {
+      return request(app)
+        .get('/api/articles?sort_by=title&&order=desc')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.descendingBy('title');
+        });
+    });
+    it('GET 200: responds with articles by queried user', () => {
+      return request(app)
+        .get('/api/articles?author=butter_bridge')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+            expect(article.author).to.equal('butter_bridge');
+          });
+        });
+    });
+    it('GET 200: responds with articles by queried topic', () => {
+      return request(app)
+        .get('/api/articles?topic=mitch')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+            expect(article.topic).to.equal('mitch');
+          });
+        });
+    });
+    it("GET 404: responds with status 404 when queried topic/author doesn't exist", () => {
+      return request(app)
+        .get('/api/articles?topic=something_that_isnt_a_topic')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql('Not found');
+        });
+    });
+    it("GET 400: responds with status 400 when queried sort_by column doesn't exist", () => {
+      return request(app)
+        .get('/api/articles?sort_by=not_a_column')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql('Queried column does not exist');
+        });
+    });
+    describe('/:article_id', () => {
+      it('GET 200: returns status 200 and and an object of the requested article', () => {
+        return request(app)
+          .get('/api/articles/1')
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+      });
+      it('GET 404: returns status 404 when requested article_id doesnt exist', () => {
+        return request(app)
+          .get('/api/articles/99999')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Not found' });
+          });
+      });
+      it('PATCH 200: returns status 200 and upated article when vote increment request is made', () => {
+        return request(app)
+          .patch('/api/articles/1')
+          .send({ inc_votes: '-10' })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes'
+            );
+            expect(body.article.votes).to.equal(90);
+          });
+      });
+      it("PATCH 404: returns status 404 when requested article_id doesn't exist", () => {
+        return request(app)
+          .patch('/api/articles/999')
+          .send({ inc_votes: '15' })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Not found' });
+          });
+      });
+      it('PATCH 400: returns status 400 when inc_votes key is not included on the request', () => {
+        return request(app)
+          .patch('/api/articles/1')
+          .send({ not_the_right_key: '15' })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad request' });
+          });
+      });
+      it('PATCH 400: returns status 400 when inc_votes value is not a number', () => {
+        return request(app)
+          .patch('/api/articles/1')
+          .send({ inc_votes: 'not a number' })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Bad request' });
+          });
+      });
+      describe('/comments', () => {
+        it('POST 201: returns status 201 and created comment', () => {
+          return request(app)
+            .post('/api/articles/1/comments')
+            .send({ username: 'lurker', body: 'This is a comment I am making' })
+            .expect(201)
+            .then(({ body }) => {
+              expect(body.comment).to.have.all.keys(
+                'comment_id',
+                'author',
+                'article_id',
+                'votes',
+                'created_at',
+                'body'
+              );
+            });
+        });
+        it('POST 400: returns status 400 when body does not have the correct information', () => {
+          return request(app)
+            .post('/api/articles/1/comments')
+            .send({
+              not_the_right_key: 'lurker',
+              body: 'This is a comment I am making'
+            })
+            .expect(400)
+            .then(({ body }) => {
+              expect(body).to.eql({ msg: 'Bad request' });
+            });
+        });
+        it('GET 200: returns an array of comments for given article, sorted by created_at asc by default', () => {
+          return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({ body }) => {
+              body.comments.forEach(comment => {
+                expect(comment).to.have.all.keys(
+                  'comment_id',
+                  'author',
+                  'article_id',
+                  'votes',
+                  'created_at',
+                  'body'
+                );
+                expect(comment.article_id).to.equal(1);
+              });
+              expect(body.comments).to.be.sortedBy('created_at');
+            });
+        });
+        it('GET 200: returns an empty array of comments when given article has no comments', () => {
+          return request(app)
+            .get('/api/articles/2/comments')
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.comments).to.eql([]);
+            });
+        });
+        it('GET 200: returns an array of comments for given article, sorted by queried sort_by and order', () => {
+          return request(app)
+            .get('/api/articles/1/comments?sort_by=author&&order=desc')
+            .expect(200)
+            .then(({ body }) => {
+              body.comments.forEach(comment => {
+                expect(comment).to.have.all.keys(
+                  'comment_id',
+                  'author',
+                  'article_id',
+                  'votes',
+                  'created_at',
+                  'body'
+                );
+                expect(comment.article_id).to.equal(1);
+              });
+              expect(body.comments).to.be.descendingBy('author');
+            });
+        });
+        it("GET 404: returns 404 when article doesn't exist", () => {
+          return request(app)
+            .get('/api/articles/999/comments')
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Not found');
+            });
+        });
+        it("GET 400: returns 400 when sort by column doesn't exist", () => {
+          return request(app)
+            .get('/api/articles/1/comments?sort_by=made_up_column')
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Queried column does not exist');
+            });
+        });
+      }); //comments
+    }); //:article_id
+  }); //articles
+  describe('/comments/:comment_id', () => {
+    it('PATCH 200: returns comment with vote incremented by passed amount', () => {
+      return request(app)
+        .patch('/api/comments/1')
+        .send({ inc_votes: -10 })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).to.have.all.keys(
+            'comment_id',
             'author',
-            'title',
             'article_id',
-            'body',
-            'topic',
-            'created_at',
             'votes',
-            'comment_count'
-          );
-        });
-    });
-    it('GET 404: returns status 404 when requested article_id doesnt exist', () => {
-      return request(app)
-        .get('/api/articles/99999')
-        .expect(404)
-        .then(({ body }) => {
-          expect(body).to.eql({ msg: 'Not found' });
-        });
-    });
-    it('PATCH 200: returns status 200 and upated article when vote increment request is made', () => {
-      return request(app)
-        .patch('/api/articles/1')
-        .send({ inc_votes: '-10' })
-        .expect(200)
-        .then(({ body }) => {
-          expect(body.article).to.have.all.keys(
-            'author',
-            'title',
-            'article_id',
-            'body',
-            'topic',
             'created_at',
-            'votes'
-          ); //how to test that votes have been incremented??
-        });
-    });
-    it("PATCH 404: returns status 404 when requested article_id doesn't exist", () => {
-      return request(app)
-        .patch('/api/articles/999')
-        .send({ inc_votes: '15' })
-        .expect(404)
-        .then(({ body }) => {
-          expect(body).to.eql({ msg: 'Not found' });
+            'body'
+          );
+          expect(body.comment.votes).to.equal(6);
         });
     });
     it('PATCH 400: returns status 400 when inc_votes key is not included on the request', () => {
       return request(app)
-        .patch('/api/articles/1')
+        .patch('/api/comments/1')
         .send({ not_the_right_key: '15' })
         .expect(400)
         .then(({ body }) => {
@@ -109,30 +339,25 @@ describe('/api', () => {
     });
     it('PATCH 400: returns status 400 when inc_votes value is not a number', () => {
       return request(app)
-        .patch('/api/articles/1')
+        .patch('/api/comments/1')
         .send({ inc_votes: 'not a number' })
         .expect(400)
         .then(({ body }) => {
           expect(body).to.eql({ msg: 'Bad request' });
         });
     });
-    describe('/comments', () => {
-      it('POST 201: returns status 201 and created comment', () => {
-        return request(app)
-          .post('/api/articles/1/comments')
-          .send({ username: 'lurker', body: 'This is a comment I am making' })
-          .expect(201)
-          .then(({ body }) => {
-            expect(body).to.have.all.keys(
-              'comment_id',
-              'author',
-              'article_id',
-              'votes',
-              'created_at',
-              'body'
-            );
-          });
-      });
-    }); //comments
-  }); //articles/article_id
+    it('DELETE 204: returns 204 and deletes comment', () => {
+      return request(app)
+        .delete('/api/comments/2')
+        .expect(204);
+    });
+    it("DELETE 404: returns 404 if comment doesn't exist", () => {
+      return request(app)
+        .delete('/api/comments/99999')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Not found');
+        });
+    });
+  }); //comments/:comment_id
 }); //api
