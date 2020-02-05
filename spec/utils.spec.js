@@ -25,6 +25,19 @@ describe('formatDates', () => {
     ];
     expect(formatDates(input)[0].created_at instanceof Date).to.be.true;
   });
+  it('does not mutate the original array', () => {
+    const input = [
+      {
+        title: 'Living in the shadow of a great man',
+        topic: 'mitch',
+        author: 'butter_bridge',
+        body: 'I find this existence challenging',
+        created_at: 1542284514171,
+        votes: 100
+      }
+    ];
+    expect(formatDates(input)).to.not.equal(input);
+  });
   it('returns an array of multiple items with created_at key formatted correctly', () => {
     let input = [
       {
@@ -98,6 +111,7 @@ describe('makeRefObj', () => {
     ];
     let expected = { 'Living in the shadow of a great man': 1 };
     expect(makeRefObj(input)).to.eql(expected);
+    expect(makeRefObj(input)).to.not.equal(input);
     input = [
       {
         article_id: 1,
@@ -160,6 +174,7 @@ describe('formatComments', () => {
       }
     ];
     expect(formatComments(comments, ref)).to.eql(expected);
+    expect(formatComments(comments, ref)).to.not.equal(comments);
   });
   it('works for multiple comments', () => {
     const comments = [

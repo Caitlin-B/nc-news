@@ -20,10 +20,13 @@ exports.addCommentByArticle = (article_id, username, body) => {
     .then(comment => comment[0]);
 };
 
-exports.amendCommentVotes = (comment_id, parsedIncVotes) => {
+exports.amendCommentVotes = (comment_id, inc_votes) => {
+  if (!inc_votes) {
+    return Promise.reject({ status: 400, msg: 'Bad request' });
+  }
   return connection('comments')
     .where('comment_id', comment_id)
-    .increment('votes', parsedIncVotes)
+    .increment('votes', inc_votes)
     .returning('*')
     .then(comment => comment[0]);
 };

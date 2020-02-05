@@ -6,9 +6,8 @@ const {
 exports.patchComment = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
-  const parsedIncVotes = parseInt(inc_votes);
-
-  amendCommentVotes(comment_id, parsedIncVotes)
+  
+  amendCommentVotes(comment_id, inc_votes)
     .then(comment => {
       res.send({ comment });
     })

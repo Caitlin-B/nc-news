@@ -35,7 +35,6 @@ exports.getArticle = (req, res, next) => {
 exports.patchArticleVotes = (req, res, next) => {
   const { inc_votes } = req.body;
   const { article_id } = req.params;
-
   updateArticleVotes(article_id, inc_votes)
     .then(article => {
       if (article === undefined) {

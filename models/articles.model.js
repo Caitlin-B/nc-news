@@ -1,5 +1,4 @@
 const connection = require('../db/connection');
-const { fetchCommentsByArticle } = require('./comments.model');
 const { fetchUsers } = require('./users.model');
 const { fetchTopics } = require('./topics.model');
 
@@ -19,8 +18,6 @@ exports.fetchArticles = (
     .orderBy(sort_by, order)
     .modify(query => {
       if (topic) query.where('topic', topic);
-    })
-    .modify(query => {
       if (author) query.where('articles.author', author);
     })
     .then(articles => {

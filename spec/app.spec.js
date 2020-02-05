@@ -11,6 +11,24 @@ chai.use(require('sams-chai-sorted'));
 describe('/api', () => {
   beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
+  it.only('GET 200: returns a JSON describing all endpoints', () => {
+    return request(app)
+      .get('/api')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.api).to.have.all.keys(
+          'GET /api',
+          'GET /api/topics',
+          'GET /api/articles',
+          'GET /api/articles/:article_id',
+          'PATCH /api/articles/:article_id',
+          'POST /api/articles/:article_id/comments',
+          'GET /api/articles/:article_id/comments',
+          'PATCH /api/comments/:comment_id',
+          'DELETE /api/comments/:comment_id'
+        );
+      });
+  });
   describe('/topics', () => {
     it('GET 200: returns status 200 and an array of topic objects', () => {
       return request(app)
@@ -71,7 +89,7 @@ describe('/api', () => {
     });
     it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
       return request(app)
-        .get('/api/articles?sort_by=title&&order=desc')
+        .get('/api/articles?sort_by=title&order=desc')
         .expect(200)
         .then(({ body }) => {
           body.articles.forEach(article => {
@@ -91,7 +109,7 @@ describe('/api', () => {
     });
     it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
       return request(app)
-        .get('/api/articles?sort_by=votes&&order=desc')
+        .get('/api/articles?sort_by=votes&order=desc')
         .expect(200)
         .then(({ body }) => {
           body.articles.forEach(article => {
@@ -111,7 +129,7 @@ describe('/api', () => {
     });
     it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
       return request(app)
-        .get('/api/articles?sort_by=comment_count&&order=asc')
+        .get('/api/articles?sort_by=comment_count&order=asc')
         .expect(200)
         .then(({ body }) => {
           body.articles.forEach(article => {
@@ -131,7 +149,7 @@ describe('/api', () => {
     });
     it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
       return request(app)
-        .get('/api/articles?sort_by=created_at&&order=desc')
+        .get('/api/articles?sort_by=created_at&order=desc')
         .expect(200)
         .then(({ body }) => {
           body.articles.forEach(article => {
@@ -201,7 +219,7 @@ describe('/api', () => {
     });
     it('GET 200: responds with status 200 and sorted by default order asc when queried order_by is not asc or desc', () => {
       return request(app)
-        .get('/api/articles?sort_by=votes&&order=something_you_cant_order_by')
+        .get('/api/articles?sort_by=votes&order=something_you_cant_order_by')
         .expect(200)
         .then(({ body }) => {
           body.articles.forEach(article => {
@@ -381,7 +399,7 @@ describe('/api', () => {
         });
         it('GET 200: returns an array of comments for given article, sorted by queried sort_by and order', () => {
           return request(app)
-            .get('/api/articles/1/comments?sort_by=author&&order=desc')
+            .get('/api/articles/1/comments?sort_by=author&order=desc')
             .expect(200)
             .then(({ body }) => {
               body.comments.forEach(comment => {
