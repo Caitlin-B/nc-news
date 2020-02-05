@@ -169,6 +169,11 @@ describe('/api', () => {
           });
         });
     });
+    it('GET 200: responds with empty array when queried user exists but has no articles', () => {
+      return request(app)
+        .get('/api/articles?author=lurker')
+        .expect(200);
+    });
     it('GET 200: responds with articles by queried topic', () => {
       return request(app)
         .get('/api/articles?topic=mitch')
@@ -188,6 +193,11 @@ describe('/api', () => {
             expect(article.topic).to.equal('mitch');
           });
         });
+    });
+    it('GET 200: responds with empty array when queried topic exists but has no articles', () => {
+      return request(app)
+        .get('/api/articles?topic=paper')
+        .expect(200);
     });
     it('GET 200: responds with status 200 and sorted by default order asc when queried order_by is not asc or desc', () => {
       return request(app)
@@ -438,6 +448,14 @@ describe('/api', () => {
       return request(app)
         .patch('/api/comments/1')
         .send({ inc_votes: 'not a number' })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body).to.eql({ msg: 'Bad request' });
+        });
+    });
+    it('PATCH 400: returns status 404 when comment does not exist', () => {
+      return request(app)
+        .patch('/api/comments/999')
         .expect(400)
         .then(({ body }) => {
           expect(body).to.eql({ msg: 'Bad request' });

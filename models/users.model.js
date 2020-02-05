@@ -5,6 +5,14 @@ exports.fetchUsers = username => {
   return connection
     .select('*')
     .from('users')
-    .where('username', username)
-    .then(user => user[0]);
+    .modify(query => {
+      if (username) query.where('username', username).first();
+    }) //if no username is passed return all usernames
+    .then(user => {
+      if (user === undefined) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
+      } else {
+        return user;
+      }
+    });
 };

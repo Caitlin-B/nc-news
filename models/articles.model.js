@@ -1,5 +1,7 @@
 const connection = require('../db/connection');
 const { fetchCommentsByArticle } = require('./comments.model');
+const { fetchUsers } = require('./users.model');
+const { fetchTopics } = require('./topics.model');
 
 exports.fetchArticles = (
   sort_by = 'created_at',
@@ -20,6 +22,16 @@ exports.fetchArticles = (
     })
     .modify(query => {
       if (author) query.where('articles.author', author);
+    })
+    .then(articles => {
+      //if article length is 0 check if the author exists
+      // if it doesnt send 404
+      //if it does send 200 and articles
+      return Promise.all([articles, fetchUsers(author)]);
+      // return Promise.reject({ status: 404, msg: 'Not found' });
+    })
+    .then(([articles]) => {
+      return Promise.all([articles, fetchTopics(topic)]);
     });
 };
 

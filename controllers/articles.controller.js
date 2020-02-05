@@ -12,12 +12,8 @@ exports.getAllArticles = (req, res, next) => {
   const { sort_by, order, author, topic } = req.query;
 
   fetchArticles(sort_by, order, author, topic)
-    .then(articles => {
-      if (articles.length === 0) {
-        return Promise.reject({ status: 404, msg: 'Not found' });
-      } else {
-        res.send({ articles });
-      }
+    .then(([articles]) => {
+      res.send({ articles });
     })
     .catch(next);
 };

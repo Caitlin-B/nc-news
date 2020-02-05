@@ -6,9 +6,6 @@ exports.getUsers = (req, res, next) => {
 
   fetchUsers(username)
     .then(user => {
-      if (user === undefined) {
-        return Promise.reject({ status: 404, msg: 'Not found' });
-      }
       res.send({ user });
     })
     .catch(next);
