@@ -49,7 +49,7 @@ describe('/api', () => {
     });
   });
   describe('/articles', () => {
-    it('GET 200: returns all articles with comment count, sorted by date in ascending order by default', () => {
+    it('GET 200: returns all articles with comment count, sorted by date in descending order by default', () => {
       return request(app)
         .get('/api/articles')
         .expect(200)
@@ -66,7 +66,7 @@ describe('/api', () => {
               'comment_count'
             );
           });
-          expect(body.articles).to.be.sortedBy('created_at');
+          expect(body.articles).to.be.descendingBy('created_at');
         });
     });
     it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
@@ -352,7 +352,7 @@ describe('/api', () => {
               expect(body).to.eql({ msg: 'Not found' });
             });
         });
-        it('GET 200: returns an array of comments for given article, sorted by created_at asc by default', () => {
+        it('GET 200: returns an array of comments for given article, sorted by created_at desc by default', () => {
           return request(app)
             .get('/api/articles/1/comments')
             .expect(200)
@@ -368,7 +368,7 @@ describe('/api', () => {
                 );
                 expect(comment.article_id).to.equal(1);
               });
-              expect(body.comments).to.be.sortedBy('created_at');
+              expect(body.comments).to.be.descendingBy('created_at');
             });
         });
         it('GET 200: returns an empty array of comments when given article has no comments', () => {
@@ -453,7 +453,7 @@ describe('/api', () => {
           expect(body).to.eql({ msg: 'Bad request' });
         });
     });
-    it('PATCH 400: returns status 404 when comment does not exist', () => {
+    it('PATCH 400: returns status 400 when comment does not exist', () => {
       return request(app)
         .patch('/api/comments/999')
         .expect(400)

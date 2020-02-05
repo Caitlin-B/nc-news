@@ -5,7 +5,7 @@ const { fetchTopics } = require('./topics.model');
 
 exports.fetchArticles = (
   sort_by = 'created_at',
-  order = 'asc',
+  order = 'desc',
   author,
   topic
 ) => {

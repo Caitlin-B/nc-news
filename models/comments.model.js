@@ -3,7 +3,7 @@ const connection = require('../db/connection');
 exports.fetchCommentsByArticle = (
   article_id,
   sort_by = 'created_at',
-  order = 'asc'
+  order = 'desc'
 ) => {
   //get all comments by article
   return connection

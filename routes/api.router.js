@@ -9,4 +9,8 @@ apiRouter.use('/users', usersRouter);
 apiRouter.use('/articles', articlesRouter);
 apiRouter.use('/comments', commentsRouter);
 
+apiRouter.all('/*', (req, res, next) =>
+  next({ status: 405, msg: 'Method not found' })
+);
+
 module.exports = apiRouter;
