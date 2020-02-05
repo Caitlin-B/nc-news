@@ -6,7 +6,7 @@ const chaiSorted = require('chai-sorted');
 const { expect } = chai;
 const connection = require('../db/connection');
 
-chai.use(chaiSorted);
+chai.use(require('sams-chai-sorted'));
 
 describe('/api', () => {
   beforeEach(() => connection.seed.run());
@@ -69,7 +69,7 @@ describe('/api', () => {
           expect(body.articles).to.be.sortedBy('created_at');
         });
     });
-    it('GET 200: returns article sorted by sort_by queried column and queried order (asc/desc)', () => {
+    it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
       return request(app)
         .get('/api/articles?sort_by=title&&order=desc')
         .expect(200)
@@ -87,6 +87,66 @@ describe('/api', () => {
             );
           });
           expect(body.articles).to.be.descendingBy('title');
+        });
+    });
+    it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
+      return request(app)
+        .get('/api/articles?sort_by=votes&&order=desc')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.descendingBy('votes');
+        });
+    });
+    it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
+      return request(app)
+        .get('/api/articles?sort_by=comment_count&&order=asc')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.sortedBy('comment_count');
+        });
+    });
+    it('GET 200: returns articles sorted by sort_by queried column and queried order', () => {
+      return request(app)
+        .get('/api/articles?sort_by=created_at&&order=desc')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.descendingBy('created_at');
         });
     });
     it('GET 200: responds with articles by queried user', () => {
@@ -129,9 +189,37 @@ describe('/api', () => {
           });
         });
     });
-    it("GET 404: responds with status 404 when queried topic/author doesn't exist", () => {
+    it('GET 200: responds with status 200 and sorted by default order asc when queried order_by is not asc or desc', () => {
+      return request(app)
+        .get('/api/articles?sort_by=votes&&order=something_you_cant_order_by')
+        .expect(200)
+        .then(({ body }) => {
+          body.articles.forEach(article => {
+            expect(article).to.have.all.keys(
+              'author',
+              'title',
+              'article_id',
+              'body',
+              'topic',
+              'created_at',
+              'votes',
+              'comment_count'
+            );
+          });
+          expect(body.articles).to.be.ascendingBy('votes');
+        });
+    });
+    it("GET 404: responds with status 404 when queried topic doesn't exist", () => {
       return request(app)
         .get('/api/articles?topic=something_that_isnt_a_topic')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.eql('Not found');
+        });
+    });
+    it("GET 404: responds with status 404 when queried author doesn't exist", () => {
+      return request(app)
+        .get('/api/articles?author=this_is_not_an_author')
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).to.eql('Not found');
@@ -243,6 +331,15 @@ describe('/api', () => {
             .expect(400)
             .then(({ body }) => {
               expect(body).to.eql({ msg: 'Bad request' });
+            });
+        });
+        it("POST 404: returns status 404 when requested article_id doesn't exist", () => {
+          return request(app)
+            .post('/api/articles/999/comments')
+            .send({ username: 'lurker', body: 'This is a comment I am making' })
+            .expect(404)
+            .then(({ body }) => {
+              expect(body).to.eql({ msg: 'Not found' });
             });
         });
         it('GET 200: returns an array of comments for given article, sorted by created_at asc by default', () => {

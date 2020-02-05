@@ -7,51 +7,40 @@ exports.fetchArticles = (
   author,
   topic
 ) => {
-  if (topic) {
-    return connection
-      .select('*')
-      .from('articles')
-      .orderBy(sort_by, order)
-      .where('topic', topic);
-  } else if (author) {
-    return connection
-      .select('*')
-      .from('articles')
-      .orderBy(sort_by, order)
-      .where('author', author);
-  } else {
-    return connection
-      .select('*')
-      .from('articles')
-      .orderBy(sort_by, order);
-  }
-};
-
-exports.fetchArticle = article_id => {
-  //get all article by article id and get all comments by article, adding comment count to article keys. If there is no article rejecting and sending 404
+  //selecting all columns from articles and adding a column count column, joining on the comments and grouping by article_id. Then ordering by queried column and where there is a topic or author selected, filtering by them.
   return connection
-    .select('*')
+    .select('articles.*')
     .from('articles')
-    .where('article_id', article_id)
-    .then(articles => articles[0])
-    .then(article => {
-      if (article === undefined) {
-        return Promise.reject({ status: 404, msg: 'Not found' });
-      } else {
-        return Promise.all([article, fetchCommentsByArticle(article_id)]);
-      }
+    .count({ comment_count: 'comment_id' })
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .orderBy(sort_by, order)
+    .modify(query => {
+      if (topic) query.where('topic', topic);
     })
-    .then(([article, comments]) => {
-      article.comment_count = comments.length;
-      return article;
+    .modify(query => {
+      if (author) query.where('articles.author', author);
     });
 };
 
-exports.updateArticleVotes = (article_id, newVotes) => {
+exports.fetchArticle = article_id => {
+  //getting articles and join on comments, then grouping by article and adding a comment_count column, filtering by article id
+
+  return connection
+    .select('articles.*')
+    .from('articles')
+    .count({ comment_count: 'comment_id' })
+    .leftJoin('comments', 'articles.article_id', 'comments.article_id')
+    .groupBy('articles.article_id')
+    .where('articles.article_id', article_id)
+    .then(articles => articles[0]);
+};
+
+exports.updateArticleVotes = (article_id, inc_votes) => {
   //update article votes by article id
   return connection('articles')
     .where('article_id', article_id)
-    .update({ votes: newVotes })
+    .increment('votes', inc_votes)
     .returning('*')
     .then(article => article[0]);
 };

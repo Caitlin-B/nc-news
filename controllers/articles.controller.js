@@ -13,13 +13,6 @@ exports.getAllArticles = (req, res, next) => {
 
   fetchArticles(sort_by, order, author, topic)
     .then(articles => {
-      return Promise.all(
-        articles.map(article => {
-          return fetchArticle(article.article_id);
-        })
-      );
-    })
-    .then(articles => {
       if (articles.length === 0) {
         return Promise.reject({ status: 404, msg: 'Not found' });
       } else {
@@ -34,24 +27,28 @@ exports.getArticle = (req, res, next) => {
   //fetching article with comment count
   fetchArticle(article_id)
     .then(article => {
-      res.send({ article });
+      if (article === undefined) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
+      } else {
+        res.send({ article });
+      }
     })
     .catch(next);
 };
 
 exports.patchArticleVotes = (req, res, next) => {
-  //getting article votes and then incrementing by inc_votes key on passed body, then updating the article votes to reflect new value
   const { inc_votes } = req.body;
   const { article_id } = req.params;
-  const parsedIncVotes = parseInt(inc_votes);
 
-  fetchArticle(article_id)
-    .then(({ votes }) => {
-      const newVotes = votes + parsedIncVotes;
-      return updateArticleVotes(article_id, newVotes);
-    })
+  updateArticleVotes(article_id, inc_votes)
     .then(article => {
-      res.status(200).send({ article });
+      if (article === undefined) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
+      } else if (inc_votes === undefined) {
+        return Promise.reject({ status: 400, msg: 'Bad request' });
+      } else {
+        res.status(200).send({ article });
+      }
     })
     .catch(next);
 };
@@ -70,7 +67,7 @@ exports.postArticleComments = (req, res, next) => {
 exports.getCommentsByArticle = (req, res, next) => {
   const { article_id } = req.params;
   const { sort_by, order } = req.query;
-  //fetching comments by article, if there are no comments, checking if article exists. if it doesnt, fetch article function will reject
+  //fetching comments by article, if there are no comments, checking if article exists. if it doesnt, send 404, else send the empty comments array
   fetchCommentsByArticle(article_id, sort_by, order)
     .then(comments => {
       if (comments.length === 0) {
@@ -80,7 +77,11 @@ exports.getCommentsByArticle = (req, res, next) => {
       }
     })
     .then(([comments, article]) => {
-      res.send({ comments });
+      if (article === undefined) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
+      } else {
+        res.send({ comments });
+      }
     })
     .catch(next);
 };

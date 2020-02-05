@@ -21,3 +21,9 @@ exports.handleError42703 = (err, req, res, next) => {
     res.status(400).send({ msg: 'Queried column does not exist' });
   } else next(err);
 };
+
+exports.handleError23503 = (err, req, res, next) => {
+  if (err.code === '23503') {
+    res.status(404).send({ msg: 'Not found' });
+  } else next(err);
+};
