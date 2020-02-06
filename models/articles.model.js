@@ -61,7 +61,13 @@ exports.fetchArticle = article_id => {
     .leftJoin('comments', 'articles.article_id', 'comments.article_id')
     .groupBy('articles.article_id')
     .where('articles.article_id', article_id)
-    .then(articles => articles[0]);
+    .then(articles => {
+      if (articles.length === 0) {
+        return Promise.reject({ status: 404, msg: 'Not found' });
+      } else {
+        return articles;
+      }
+    });
 };
 
 exports.updateArticleVotes = (article_id, inc_votes) => {
@@ -77,4 +83,10 @@ exports.addArticle = (author, title, topic, body) => {
   return connection('articles')
     .insert({ author, title, topic, body })
     .returning('*');
+};
+
+exports.removeArticle = article_id => {
+  return connection('articles')
+    .where('article_id', article_id)
+    .del();
 };

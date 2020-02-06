@@ -399,6 +399,16 @@ describe('/api', () => {
             expect(body).to.eql({ msg: 'Bad request' });
           });
       });
+      it('DELETE 204: deletes the selected article', () => {
+        return request(app)
+          .delete('/api/articles/3')
+          .expect(204);
+      });
+      it("DELETE 404: returns error when article doesn't exist", () => {
+        return request(app)
+          .delete('/api/articles/999')
+          .expect(404);
+      });
       describe('/comments', () => {
         it('POST 201: returns status 201 and created comment', () => {
           return request(app)

@@ -2,7 +2,8 @@ const {
   fetchArticles,
   fetchArticle,
   updateArticleVotes,
-  addArticle
+  addArticle,
+  removeArticle
 } = require('../models/articles.model');
 const {
   fetchCommentsByArticle,
@@ -23,12 +24,8 @@ exports.getArticle = (req, res, next) => {
   const { article_id } = req.params;
   //fetching article with comment count
   fetchArticle(article_id)
-    .then(article => {
-      if (article === undefined) {
-        return Promise.reject({ status: 404, msg: 'Not found' });
-      } else {
-        res.send({ article });
-      }
+    .then(([article]) => {
+      res.send({ article });
     })
     .catch(next);
 };
@@ -88,6 +85,19 @@ exports.postArticle = (req, res, next) => {
   addArticle(username, title, topic, body)
     .then(([article]) => {
       res.status(201).send({ article });
+    })
+    .catch(next);
+};
+
+exports.deleteArticle = (req, res, next) => {
+  const { article_id } = req.params;
+
+  fetchArticle(article_id)
+    .then(() => {
+      return removeArticle(article_id);
+    })
+    .then(() => {
+      res.status(204).send();
     })
     .catch(next);
 };

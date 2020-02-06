@@ -5,7 +5,8 @@ const {
   postArticleComments,
   getCommentsByArticle,
   getAllArticles,
-  postArticle
+  postArticle,
+  deleteArticle
 } = require('../controllers/articles.controller');
 
 articlesRouter
@@ -16,7 +17,8 @@ articlesRouter
 articlesRouter
   .route('/:article_id')
   .get(getArticle)
-  .patch(patchArticleVotes);
+  .patch(patchArticleVotes)
+  .delete(deleteArticle);
 
 articlesRouter
   .route('/:article_id/comments')
