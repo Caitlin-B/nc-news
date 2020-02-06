@@ -26,3 +26,9 @@ exports.fetchSpecificTopic = topic => {
       console.log(topic);
     });
 };
+
+exports.addTopic = (slug, description) => {
+  return connection('topics')
+    .insert({ slug, description })
+    .returning('*');
+};

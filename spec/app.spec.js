@@ -48,6 +48,27 @@ describe('/api', () => {
         });
     });
   });
+  it('POST 201: posts a topic', () => {
+    return request(app)
+      .post('/api/topics')
+      .send({ slug: 'dogs', description: "I'm allergic to cats" })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.topic).to.eql({
+          slug: 'dogs',
+          description: "I'm allergic to cats"
+        });
+      });
+  });
+  it('POST 400: returns an error when slug and description are not passed in the request', () => {
+    return request(app)
+      .post('/api/topics')
+      .send({ notslug: 'dogs', description: "I'm allergic to cats" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).to.equal('Bad request');
+      });
+  });
   describe('users', () => {
     it('GET 200: returns status 200 and the requested user info', () => {
       return request(app)
