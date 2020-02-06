@@ -9,11 +9,11 @@ const {
 } = require('../models/comments.model');
 
 exports.getAllArticles = (req, res, next) => {
-  const { sort_by, order, author, topic } = req.query;
+  const { sort_by, order, author, topic, limit, p } = req.query;
 
-  fetchArticles(sort_by, order, author, topic)
-    .then(([articles]) => {
-      res.send({ articles });
+  fetchArticles(sort_by, order, author, topic, limit, p)
+    .then(([articles, total_count]) => {
+      res.send({ total_count, articles });
     })
     .catch(next);
 };
@@ -61,14 +61,14 @@ exports.postArticleComments = (req, res, next) => {
 
 exports.getCommentsByArticle = (req, res, next) => {
   const { article_id } = req.params;
-  const { sort_by, order } = req.query;
+  const { sort_by, order, limit, p } = req.query;
   //fetching comments by article, if there are no comments, checking if article exists. if it doesnt, send 404, else send the empty comments array
-  fetchCommentsByArticle(article_id, sort_by, order)
-    .then(comments => {
+  fetchCommentsByArticle(article_id, sort_by, order, limit, p)
+    .then(([comments, total_count]) => {
       if (comments.length === 0) {
         return Promise.all([comments, fetchArticle(article_id)]);
       } else {
-        res.send({ comments });
+        res.send({ total_count, comments });
       }
     })
     .then(([comments, article]) => {

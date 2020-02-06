@@ -6,7 +6,9 @@ exports.fetchArticles = (
   sort_by = 'created_at',
   order = 'desc',
   author,
-  topic
+  topic,
+  limit = 10,
+  p = 1
 ) => {
   //selecting all columns from articles and adding a column count column, joining on the comments and grouping by article_id. Then ordering by queried column and where there is a topic or author selected, filtering by them.
   return connection
@@ -16,6 +18,8 @@ exports.fetchArticles = (
     .leftJoin('comments', 'articles.article_id', 'comments.article_id')
     .groupBy('articles.article_id')
     .orderBy(sort_by, order)
+    .limit(Number(limit))
+    .offset(limit * p - limit)
     .modify(query => {
       if (topic) query.where('topic', topic);
       if (author) query.where('articles.author', author);
@@ -25,11 +29,26 @@ exports.fetchArticles = (
       // if it doesnt send 404
       //if it does send 200 and articles
       return Promise.all([articles, fetchUsers(author)]);
-      // return Promise.reject({ status: 404, msg: 'Not found' });
     })
     .then(([articles]) => {
       return Promise.all([articles, fetchTopics(topic)]);
+    })
+    .then(([articles]) => {
+      //returning limit number of articles and a count of total articles
+      return Promise.all([articles, exports.fetchArticleCount(author, topic)]);
     });
+};
+
+exports.fetchArticleCount = (author, topic) => {
+  //returning a count of all queried articles
+  return connection
+    .select('*')
+    .from('articles')
+    .modify(query => {
+      if (topic) query.where('topic', topic);
+      if (author) query.where('articles.author', author);
+    })
+    .then(articles => articles.length);
 };
 
 exports.fetchArticle = article_id => {

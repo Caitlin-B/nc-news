@@ -11,7 +11,7 @@ chai.use(require('sams-chai-sorted'));
 describe('/api', () => {
   beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
-  it.only('GET 200: returns a JSON describing all endpoints', () => {
+  it('GET 200: returns a JSON describing all endpoints', () => {
     return request(app)
       .get('/api')
       .expect(200)
@@ -237,6 +237,24 @@ describe('/api', () => {
           expect(body.articles).to.be.ascendingBy('votes');
         });
     });
+    it('GET 200: responds with page limit defaulted to 10 and page defaulted to 1', () => {
+      return request(app)
+        .get('/api/articles')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.total_count).to.equal(12);
+          expect(body.articles).to.have.length(10);
+        });
+    });
+    it('GET 200: responds with queried limit and page', () => {
+      return request(app)
+        .get('/api/articles?limit=5&p=3')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.total_count).to.equal(12);
+          expect(body.articles).to.have.length(2);
+        });
+    });
     it("GET 404: responds with status 404 when queried topic doesn't exist", () => {
       return request(app)
         .get('/api/articles?topic=something_that_isnt_a_topic')
@@ -387,6 +405,23 @@ describe('/api', () => {
                 expect(comment.article_id).to.equal(1);
               });
               expect(body.comments).to.be.descendingBy('created_at');
+            });
+        });
+        it('GET 200: includes a total_count key and returns a default of 10 comments per page starting at p = 1', () => {
+          return request(app)
+            .get('/api/articles/1/comments')
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.total_count).to.equal(13);
+            });
+        });
+        it('GET 200: returns the queried limit number and queried page', () => {
+          return request(app)
+            .get('/api/articles/1/comments?limit=5&p=3')
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.total_count).to.equal(13);
+              expect(body.comments).to.have.length(3);
             });
         });
         it('GET 200: returns an empty array of comments when given article has no comments', () => {

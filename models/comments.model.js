@@ -3,14 +3,29 @@ const connection = require('../db/connection');
 exports.fetchCommentsByArticle = (
   article_id,
   sort_by = 'created_at',
-  order = 'desc'
+  order = 'desc',
+  limit = 10,
+  p = 1
 ) => {
   //get all comments by article
   return connection
     .select('*')
     .from('comments')
     .where('article_id', article_id)
-    .orderBy(sort_by, order);
+    .orderBy(sort_by, order)
+    .limit(+limit)
+    .offset(limit * p - limit)
+    .then(comments => {
+      return Promise.all([comments, fetchCommentCountByArticle(article_id)]);
+    });
+};
+
+const fetchCommentCountByArticle = article_id => {
+  return connection
+    .select('*')
+    .from('comments')
+    .where('article_id', article_id)
+    .then(comments => comments.length);
 };
 
 exports.addCommentByArticle = (article_id, username, body) => {
