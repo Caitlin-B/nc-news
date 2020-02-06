@@ -19,9 +19,15 @@ describe('/api', () => {
         expect(body.api).to.have.all.keys(
           'GET /api',
           'GET /api/topics',
+          'GET /api/users',
+          'POST /api/topics',
+          'POST /api/users',
+          'GET /api/users/:username',
           'GET /api/articles',
+          'POST /api/articles',
           'GET /api/articles/:article_id',
           'PATCH /api/articles/:article_id',
+          'DELETE /api/articles/:article_id',
           'POST /api/articles/:article_id/comments',
           'GET /api/articles/:article_id/comments',
           'PATCH /api/comments/:comment_id',
@@ -69,22 +75,67 @@ describe('/api', () => {
         expect(body.msg).to.equal('Bad request');
       });
   });
-  describe('users', () => {
-    it('GET 200: returns status 200 and the requested user info', () => {
+  describe('/users', () => {
+    it('GET: 200 returns an array of all users', () => {
       return request(app)
-        .get('/api/users/butter_bridge')
+        .get('/api/users')
         .expect(200)
         .then(({ body }) => {
-          expect(body.user).to.have.all.keys('username', 'avatar_url', 'name');
+          body.users.forEach(user => {
+            expect(user).to.have.all.keys('username', 'avatar_url', 'name');
+          });
         });
     });
-    it('GET 404: returns status 404 when requested user does not exist', () => {
+    it('POST 201: adds a user', () => {
       return request(app)
-        .get('/api/users/a_made_up_username')
-        .expect(404)
+        .post('/api/users')
+        .send({
+          username: 'newUser',
+          avatar_url: 'www.google.com',
+          name: 'Bob'
+        })
+        .expect(201)
         .then(({ body }) => {
-          expect(body).to.eql({ msg: 'Not found' });
+          expect(body.user).to.eql({
+            username: 'newUser',
+            avatar_url: 'www.google.com',
+            name: 'Bob'
+          });
         });
+    });
+    it('POST 400: returns an error when request does not include username, avatar_url and name', () => {
+      return request(app)
+        .post('/api/users')
+        .send({
+          username: 'newUser',
+          name: 'Bob'
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql('Bad request');
+        });
+    });
+    describe('/:username', () => {
+      it('GET 200: returns status 200 and the requested user info', () => {
+        return request(app)
+          .get('/api/users/butter_bridge')
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.user).to.have.all.keys(
+              'username',
+              'avatar_url',
+              'name'
+            );
+          });
+      });
+      it('GET 404: returns status 404 when requested user does not exist', () => {
+        return request(app)
+          .get('/api/users/a_made_up_username')
+          .expect(404)
+          .then(({ body }) => {
+            expect(body).to.eql({ msg: 'Not found' });
+          });
+      });
     });
   });
   describe('/articles', () => {

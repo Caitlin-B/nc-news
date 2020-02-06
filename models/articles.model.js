@@ -1,5 +1,5 @@
 const connection = require('../db/connection');
-const { fetchUsers } = require('./users.model');
+const { fetchUser } = require('./users.model');
 const { fetchTopics } = require('./topics.model');
 
 exports.fetchArticles = (
@@ -28,7 +28,7 @@ exports.fetchArticles = (
       //if article length is 0 check if the author exists
       // if it doesnt send 404
       //if it does send 200 and articles
-      return Promise.all([articles, fetchUsers(author)]);
+      return Promise.all([articles, fetchUser(author)]);
     })
     .then(([articles]) => {
       return Promise.all([articles, fetchTopics(topic)]);

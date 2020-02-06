@@ -17,6 +17,51 @@
       "topic": [{ "slug": "puzzles", "description": "All about puzzles!" }]
     }
   },
+  "GET /api/users": {
+    "description": "serves an array of all users",
+    "queries": [],
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "firstUser",
+          "avatar_url": "www.useravatar.com",
+          "name": "Adam"
+        },
+        {
+          "username": "anotherUser",
+          "avatar_url": "www.google.com",
+          "name": "Caroline"
+        }
+      ]
+    }
+  },
+  "POST /api/users": {
+    "description": "posts a new user",
+    "queries": [],
+    "exampleBody": {
+      "username": "newUser",
+      "avatar_url": "www.google.com",
+      "name": "Bob"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "newUser",
+        "avatar_url": "www.google.com",
+        "name": "Bob"
+      }
+    }
+  },
+  "GET /api/users/:username": {
+    "description": "serves a specific user",
+    "queries": [],
+    "exampleResponse": {
+      "user": {
+        "username": "firstUser",
+        "avatar_url": "www.useravatar.com",
+        "name": "Adam"
+      }
+    }
+  },
   "GET /api/articles": {
     "description": "serves an array of all articles and a count of the total number of articles, defaulting to 10 per page",
     "queries": ["author", "topic", "sort_by", "order", "limit", "p"],

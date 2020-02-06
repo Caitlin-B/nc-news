@@ -1,6 +1,6 @@
 const connection = require('../db/connection');
 
-exports.fetchUsers = username => {
+exports.fetchUser = username => {
   //get all users by username
   return connection
     .select('*')
@@ -15,4 +15,14 @@ exports.fetchUsers = username => {
         return user;
       }
     });
+};
+
+exports.fetchUsers = () => {
+  return connection.select('*').from('users');
+};
+
+exports.addUser = (username, avatar_url, name) => {
+  return connection('users')
+    .insert({ username, avatar_url, name })
+    .returning('*');
 };
