@@ -35,11 +35,11 @@ exports.fetchArticles = (
     })
     .then(([articles]) => {
       //returning limit number of articles and a count of total articles
-      return Promise.all([articles, exports.fetchArticleCount(author, topic)]);
+      return Promise.all([articles, fetchArticleCount(author, topic)]);
     });
 };
 
-exports.fetchArticleCount = (author, topic) => {
+const fetchArticleCount = (author, topic) => {
   //returning a count of all queried articles
   return connection
     .select('*')
@@ -71,4 +71,10 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
     .increment('votes', inc_votes)
     .returning('*')
     .then(article => article[0]);
+};
+
+exports.addArticle = (author, title, topic, body) => {
+  return connection('articles')
+    .insert({ author, title, topic, body })
+    .returning('*');
 };

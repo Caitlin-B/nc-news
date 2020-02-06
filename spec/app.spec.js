@@ -279,6 +279,55 @@ describe('/api', () => {
           expect(body.msg).to.eql('Queried column does not exist');
         });
     });
+    it('POST 201: returns status 201 and posted article', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          username: 'butter_bridge',
+          title: 'a new article',
+          topic: 'cats',
+          body: 'a new article that is about cats'
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).to.have.all.keys(
+            'author',
+            'title',
+            'body',
+            'article_id',
+            'topic',
+            'created_at',
+            'votes'
+          );
+        });
+    });
+    it('POST 400: returns an error when each of username, title, topic and body are not passed in the request', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          title: 'a new article',
+          topic: 'cats',
+          body: 'a new article that is about cats'
+        })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Bad request');
+        });
+    });
+    it('POST 404: returns an error when username or topic are not valid', () => {
+      return request(app)
+        .post('/api/articles')
+        .send({
+          username: 'not_a_real_username',
+          title: 'a new article',
+          topic: 'cats',
+          body: 'a new article that is about cats'
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Not found');
+        });
+    });
     describe('/:article_id', () => {
       it('GET 200: returns status 200 and and an object of the requested article', () => {
         return request(app)

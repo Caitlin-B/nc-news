@@ -1,7 +1,8 @@
 const {
   fetchArticles,
   fetchArticle,
-  updateArticleVotes
+  updateArticleVotes,
+  addArticle
 } = require('../models/articles.model');
 const {
   fetchCommentsByArticle,
@@ -77,6 +78,16 @@ exports.getCommentsByArticle = (req, res, next) => {
       } else {
         res.send({ comments });
       }
+    })
+    .catch(next);
+};
+
+exports.postArticle = (req, res, next) => {
+  const { username, title, topic, body } = req.body;
+
+  addArticle(username, title, topic, body)
+    .then(([article]) => {
+      res.status(201).send({ article });
     })
     .catch(next);
 };
