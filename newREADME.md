@@ -25,10 +25,9 @@ git clone https://github.com/Caitlin-B/nc-news
 cd nc-news
 ```
 
-3. Install the dependencies by running the following scripts
+3. Install the dependencies by running the following script
 
 ```
-npm init -y
 npm install
 ```
 
@@ -57,14 +56,14 @@ const baseConfig = {
 const customConfig = {
   development: {
     connection: {
-      database: 'nc_news',
+      database: 'nc_news'
       //username: 'your_username',
       //password: 'your_password'
     }
   },
   test: {
     connection: {
-      database: 'nc_news_test',
+      database: 'nc_news_test'
       //username: 'your_username',
       //password: 'your_password'
     }

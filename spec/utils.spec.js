@@ -36,7 +36,18 @@ describe('formatDates', () => {
         votes: 100
       }
     ];
-    expect(formatDates(input)).to.not.equal(input);
+    formatDates(input);
+    const copy = [
+      {
+        title: 'Living in the shadow of a great man',
+        topic: 'mitch',
+        author: 'butter_bridge',
+        body: 'I find this existence challenging',
+        created_at: 1542284514171,
+        votes: 100
+      }
+    ];
+    expect(input).to.eql(copy);
   });
   it('returns an array of multiple items with created_at key formatted correctly', () => {
     let input = [
@@ -97,6 +108,30 @@ describe('makeRefObj', () => {
     const input = [];
     expect(makeRefObj(input)).to.eql({});
     expect(makeRefObj(input)).to.not.equal(input);
+  });
+  it('does not mutate original array', () => {
+    const input = [
+      {
+        article_id: 1,
+        title: 'Living in the shadow of a great man',
+        body: 'I find this existence challenging',
+        votes: 100,
+        topic: 'mitch',
+        author: 'butter_bridge'
+      }
+    ];
+    makeRefObj(input);
+    const copy = [
+      {
+        article_id: 1,
+        title: 'Living in the shadow of a great man',
+        body: 'I find this existence challenging',
+        votes: 100,
+        topic: 'mitch',
+        author: 'butter_bridge'
+      }
+    ];
+    expect(input).to.eql(copy);
   });
   it('makes a reference object of article name and id', () => {
     let input = [
@@ -175,6 +210,31 @@ describe('formatComments', () => {
     ];
     expect(formatComments(comments, ref)).to.eql(expected);
     expect(formatComments(comments, ref)).to.not.equal(comments);
+  });
+  it('does not mutate the original array', () => {
+    const comments = [
+      {
+        body:
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        belongs_to: "They're not exactly dogs, are they?",
+        created_by: 'butter_bridge',
+        votes: 16,
+        created_at: 1511354163389
+      }
+    ];
+    const ref = { "They're not exactly dogs, are they?": 1 };
+    formatComments(comments, ref);
+    const copy = [
+      {
+        body:
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        belongs_to: "They're not exactly dogs, are they?",
+        created_by: 'butter_bridge',
+        votes: 16,
+        created_at: 1511354163389
+      }
+    ];
+    expect(comments).to.eql(copy);
   });
   it('works for multiple comments', () => {
     const comments = [
