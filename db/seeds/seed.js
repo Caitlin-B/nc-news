@@ -39,7 +39,6 @@ exports.seed = function(knex) {
       reformat comments to have author and article_id keys
 
       */
-
       const articleRef = makeRefObj(articleRows);
       const dateFormattedComments = formatDates(commentData);
       const formattedComments = formatComments(

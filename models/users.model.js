@@ -3,7 +3,7 @@ const connection = require('../db/connection');
 exports.fetchUser = username => {
   //get all users by username
   return connection
-    .select('*')
+    .select('username', 'avatar_url', 'name')
     .from('users')
     .modify(query => {
       if (username) query.where('username', username).first();
@@ -18,11 +18,11 @@ exports.fetchUser = username => {
 };
 
 exports.fetchUsers = () => {
-  return connection.select('*').from('users');
+  return connection.select('username', 'avatar_url', 'name').from('users');
 };
 
-exports.addUser = (username, avatar_url, name) => {
+exports.addUser = (username, avatar_url, name, password) => {
   return connection('users')
-    .insert({ username, avatar_url, name })
+    .insert({ username, avatar_url, name, password })
     .returning('*');
 };

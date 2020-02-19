@@ -20,9 +20,9 @@ exports.getUsers = (req, res, next) => {
 };
 
 exports.postUser = (req, res, next) => {
-  const { username, avatar_url, name } = req.body;
+  const { username, avatar_url, name, password } = req.body;
 
-  addUser(username, avatar_url, name)
+  addUser(username, avatar_url, name, password)
     .then(([user]) => {
       res.status(201).send({ user });
     })
