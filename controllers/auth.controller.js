@@ -6,21 +6,42 @@ const { JWT_SECRET } = require('../config');
 exports.sendToken = (req, res, next) => {
   const { username, password } = req.body;
 
-  return connection
-    .select('*')
-    .from('users')
-    .where('username', username)
-    .then(([user]) => {
-      if (!user || password !== user.password) {
-        next({ status: 401, msg: 'invalid username or password' });
-      } else {
-        const token = jwt.sign(
-          { user: user.username, iat: Date.now() },
-          JWT_SECRET
-        );
-        res.send({ token });
-      }
-    });
+  return (
+    connection
+      .select('*')
+      .from('users')
+      .where('username', username)
+      // .then(([user]) => {
+      //   if (!user || password !== user.password) {
+      //     next({ status: 401, msg: 'invalid username or password' });
+      //   } else {
+      //     const token = jwt.sign(
+      //       { user: user.username, iat: Date.now() },
+      //       JWT_SECRET
+      //     );
+      //     res.send({ token });
+      //   }
+      // });
+      .then(([user]) => {
+        if (!user) {
+          next({ status: 401, msg: 'invalid username or password' });
+        } else {
+        return Promise.all([bcrypt.compare(password, user.password), user]);
+        }
+      })
+      .then(([passwordOk, user]) => {
+        if (passwordOk) {
+          const token = jwt.sign(
+            { user: user.username, iat: Date.now() },
+            JWT_SECRET
+          );
+          res.send({ token });
+        } else {
+          next({ status: 401, msg: 'invalid username or password' });
+        }
+      })
+      .catch(next)
+  );
 };
 
 exports.validateToken = (req, res, next) => {

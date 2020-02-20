@@ -5,14 +5,15 @@ const {
   userData
 } = require('../data/index.js');
 
-const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
+const { formatDates, formatComments, makeRefObj, formatUsers } = require('../utils/utils');
 //seeding our data into the database using knex, rather than inputting it manually
 exports.seed = function(knex) {
+  const formattedUsers = formatUsers(userData);
   const topicsInsertions = knex('topics')
     .insert(topicData)
     .returning('*');
   const usersInsertions = knex('users')
-    .insert(userData)
+    .insert(formattedUsers)
     .returning('*');
 
   return knex.migrate

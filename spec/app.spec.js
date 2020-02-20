@@ -33,7 +33,7 @@ describe('/api', () => {
           expect(body).to.have.ownProperty('token');
         });
     });
-    it('POST responds with status 401 for an incorrect password', () => {
+    it('POST 401: responds with status 401 for an incorrect password', () => {
       return request(app)
         .post('/api/login')
         .send({ username: 'butter_bridge', password: 'wrongpassword' })
@@ -42,7 +42,7 @@ describe('/api', () => {
           expect(msg).to.equal('invalid username or password');
         });
     });
-    it('POST responds with status 401 for an incorrect username', () => {
+    it('POST 401: responds with status 401 for an incorrect username', () => {
       return request(app)
         .post('/api/login')
         .send({ username: 'wrongusername', password: 'secure123' })
