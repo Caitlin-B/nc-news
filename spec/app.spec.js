@@ -6,11 +6,53 @@ const chaiSorted = require('chai-sorted');
 const { expect } = chai;
 const connection = require('../db/connection');
 
+const defaults = require('superagent-defaults');
+const request2 = defaults(request(app)); //allows assigning a token to make post requests
+
 chai.use(require('sams-chai-sorted'));
 
 describe('/api', () => {
   beforeEach(() => connection.seed.run());
   after(() => connection.destroy());
+  describe('/api/login', () => {
+    beforeEach(() => {
+      request2
+        .post('/api/login')
+        .expect(200)
+        .send({ username: 'butter_bridge', password: 'butter_bridge_pw' })
+        .then(({ body: { token } }) => {
+          request2.set('Authorization', `BEARER ${token}`);
+        });
+    });
+    it('POST 200: responds with access token when given correct username and password', () => {
+      return request(app)
+        .post('/api/login')
+        .send({ username: 'butter_bridge', password: 'butter_bridge_pw' })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).to.have.ownProperty('token');
+        });
+    });
+    it('POST 401: responds with status 401 for an incorrect password', () => {
+      return request(app)
+        .post('/api/login')
+        .send({ username: 'butter_bridge', password: 'wrongpassword' })
+        .expect(401)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal('invalid username or password');
+        });
+    });
+    it('POST 401: responds with status 401 for an incorrect username', () => {
+      return request(app)
+        .post('/api/login')
+        .send({ username: 'wrongusername', password: 'secure123' })
+        .expect(401)
+        .then(({ body: { msg } }) => {
+          expect(msg).to.equal('invalid username or password');
+        });
+    });
+  });
+  //// MAIN ENDPOINTS
   it('GET 200: returns a JSON describing all endpoints', () => {
     return request(app)
       .get('/api')
@@ -92,14 +134,16 @@ describe('/api', () => {
         .send({
           username: 'newUser',
           avatar_url: 'www.google.com',
-          name: 'Bob'
+          name: 'Bob',
+          password: 'bobssecretpassword'
         })
         .expect(201)
         .then(({ body }) => {
           expect(body.user).to.eql({
             username: 'newUser',
             avatar_url: 'www.google.com',
-            name: 'Bob'
+            name: 'Bob',
+            password: 'bobssecretpassword'
           });
         });
     });
@@ -139,6 +183,16 @@ describe('/api', () => {
     });
   });
   describe('/articles', () => {
+    beforeEach(() => {
+      //assign token for post requests
+      request2
+        .post('/api/login')
+        .expect(200)
+        .send({ username: 'butter_bridge', password: 'butter_bridge_pw' })
+        .then(({ body: { token } }) => {
+          request2.set('Authorization', `BEARER ${token}`);
+        });
+    });
     it('GET 200: returns all articles with comment count, sorted by date in descending order by default', () => {
       return request(app)
         .get('/api/articles')
@@ -352,7 +406,7 @@ describe('/api', () => {
         });
     });
     it('POST 201: returns status 201 and posted article', () => {
-      return request(app)
+      return request2 //has token assigned
         .post('/api/articles')
         .send({
           username: 'butter_bridge',
@@ -373,8 +427,23 @@ describe('/api', () => {
           );
         });
     });
+    it('POST 401: returns status 401 when no token is assigned', () => {
+      return request2 
+        .post('/api/articles')
+        .set('Authorization', ``) //remove token authorisation
+        .send({
+          username: 'butter_bridge',
+          title: 'a new article',
+          topic: 'cats',
+          body: 'a new article that is about cats'
+        })
+        .expect(401)
+        .then(({ body }) => {
+          expect(body.msg).to.eql('unauthorised');
+        });
+    });
     it('POST 400: returns an error when each of username, title, topic and body are not passed in the request', () => {
-      return request(app)
+      return request2
         .post('/api/articles')
         .send({
           title: 'a new article',
@@ -387,7 +456,7 @@ describe('/api', () => {
         });
     });
     it('POST 404: returns an error when username or topic are not valid', () => {
-      return request(app)
+      return request2
         .post('/api/articles')
         .send({
           username: 'not_a_real_username',
@@ -483,7 +552,7 @@ describe('/api', () => {
       });
       describe('/comments', () => {
         it('POST 201: returns status 201 and created comment', () => {
-          return request(app)
+          return request2 //has token assigned
             .post('/api/articles/1/comments')
             .send({ username: 'lurker', body: 'This is a comment I am making' })
             .expect(201)
@@ -499,7 +568,7 @@ describe('/api', () => {
             });
         });
         it('POST 400: returns status 400 when body does not have the correct information', () => {
-          return request(app)
+          return request2 //used for token
             .post('/api/articles/1/comments')
             .send({
               not_the_right_key: 'lurker',
@@ -511,12 +580,22 @@ describe('/api', () => {
             });
         });
         it("POST 404: returns status 404 when requested article_id doesn't exist", () => {
-          return request(app)
+          return request2 //used for token
             .post('/api/articles/999/comments')
             .send({ username: 'lurker', body: 'This is a comment I am making' })
             .expect(404)
             .then(({ body }) => {
               expect(body).to.eql({ msg: 'Not found' });
+            });
+        });
+        it('POST 401: returns 401 if no token is provided', () => {
+          return request2
+            .post('/api/articles/1/comments')
+            .set('Authorization', ``) //remove auth token
+            .send({ username: 'lurker', body: 'This is a comment I am making' })
+            .expect(401)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('unauthorised');
             });
         });
         it('GET 200: returns an array of comments for given article, sorted by created_at desc by default', () => {
