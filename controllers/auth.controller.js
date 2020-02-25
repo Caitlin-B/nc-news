@@ -36,6 +36,7 @@ exports.sendToken = (req, res, next) => {
             JWT_SECRET
           );
           res.send({ token });
+          //returning true for correct password but not sending token
         } else {
           next({ status: 401, msg: 'invalid password' });
         }
