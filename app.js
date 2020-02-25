@@ -13,6 +13,7 @@ const {
 app.use(express.json());
 app.use(cors());
 app.use('/api', apiRouter);
+
 app.all('/*', (req, res, next) => next({ status: 404, msg: 'Not found' }));
 
 app.use(handleCustomErrors);

@@ -39,7 +39,7 @@ describe('/api', () => {
         .send({ username: 'butter_bridge', password: 'wrongpassword' })
         .expect(401)
         .then(({ body: { msg } }) => {
-          expect(msg).to.equal('invalid username or password');
+          expect(msg).to.equal('invalid password');
         });
     });
     it('POST 401: responds with status 401 for an incorrect username', () => {
@@ -48,7 +48,7 @@ describe('/api', () => {
         .send({ username: 'wrongusername', password: 'secure123' })
         .expect(401)
         .then(({ body: { msg } }) => {
-          expect(msg).to.equal('invalid username or password');
+          expect(msg).to.equal('invalid username');
         });
     });
   });

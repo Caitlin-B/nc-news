@@ -24,7 +24,7 @@ exports.sendToken = (req, res, next) => {
       // });
       .then(([user]) => {
         if (!user) {
-          next({ status: 401, msg: 'invalid username or password' });
+          next({ status: 401, msg: 'invalid username' });
         } else {
         return Promise.all([bcrypt.compare(password, user.password), user]);
         }
@@ -37,7 +37,7 @@ exports.sendToken = (req, res, next) => {
           );
           res.send({ token });
         } else {
-          next({ status: 401, msg: 'invalid username or password' });
+          next({ status: 401, msg: 'invalid password' });
         }
       })
       .catch(next)
