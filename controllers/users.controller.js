@@ -22,8 +22,18 @@ exports.getUsers = (req, res, next) => {
 exports.postUser = (req, res, next) => {
   const { username, avatar_url, name, password } = req.body;
 
-  addUser(username, avatar_url, name, password)
-    .then(([user]) => {
+  if(!password) {next({status:400, msg:'Bad request - password required'})}
+
+  const bcrypt = require('bcrypt');
+  const encryptedPassword = bcrypt.hashSync(password, 10);
+  addUser(username, avatar_url, name, encryptedPassword)
+    .then(([newUser]) => {
+      const user = {
+        username: newUser.username,
+        avatar_url: newUser.avatar_url,
+        name: newUser.name
+      };
+
       res.status(201).send({ user });
     })
     .catch(next);

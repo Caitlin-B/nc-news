@@ -142,8 +142,7 @@ describe('/api', () => {
           expect(body.user).to.eql({
             username: 'newUser',
             avatar_url: 'www.google.com',
-            name: 'Bob',
-            password: 'bobssecretpassword'
+            name: 'Bob'
           });
         });
     });
@@ -156,7 +155,7 @@ describe('/api', () => {
         })
         .expect(400)
         .then(({ body }) => {
-          expect(body.msg).to.eql('Bad request');
+          expect(body.msg).to.eql('Bad request - password required');
         });
     });
     describe('/:username', () => {
@@ -428,7 +427,7 @@ describe('/api', () => {
         });
     });
     it('POST 401: returns status 401 when no token is assigned', () => {
-      return request2 
+      return request2
         .post('/api/articles')
         .set('Authorization', ``) //remove token authorisation
         .send({
