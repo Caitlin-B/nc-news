@@ -41,7 +41,8 @@
     "exampleBody": {
       "username": "newUser",
       "avatar_url": "www.google.com",
-      "name": "Bob"
+      "name": "Bob",
+      "password": "ilovecoding"
     },
     "exampleResponse": {
       "user": {
