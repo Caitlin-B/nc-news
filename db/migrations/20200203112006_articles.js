@@ -7,7 +7,8 @@ exports.up = function(knex) {
     articlesTable
       .string('topic')
       .references('topics.slug')
-      .notNullable();
+      .notNullable()
+      .onDelete('CASCADE');
     articlesTable
       .string('author')
       .references('users.username')

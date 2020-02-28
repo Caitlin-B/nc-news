@@ -33,5 +33,5 @@ exports.addTopic = (slug, description) => {
 exports.removeTopic = slug => {
   return connection('topics')
     .where('slug', slug)
-    .del();
+    .del()
 };

@@ -63,6 +63,7 @@ describe('/api', () => {
           'GET /api/topics',
           'GET /api/users',
           'POST /api/topics',
+          'DELETE /api/topics/:slug',
           'POST /api/users',
           'GET /api/users/:username',
           'GET /api/articles',
@@ -95,32 +96,34 @@ describe('/api', () => {
           });
         });
     });
-  });
-  it('POST 201: posts a topic', () => {
-    return request(app)
-      .post('/api/topics')
-      .send({ slug: 'dogs', description: "I'm allergic to cats" })
-      .expect(201)
-      .then(({ body }) => {
-        expect(body.topic).to.eql({
-          slug: 'dogs',
-          description: "I'm allergic to cats"
+
+    it('POST 201: posts a topic', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ slug: 'dogs', description: "I'm allergic to cats" })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.topic).to.eql({
+            slug: 'dogs',
+            description: "I'm allergic to cats"
+          });
         });
-      });
+    });
+    it('POST 400: returns an error when slug and description are not passed in the request', () => {
+      return request(app)
+        .post('/api/topics')
+        .send({ notslug: 'dogs', description: "I'm allergic to cats" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal('Bad request');
+        });
+    });
+    it('DELETE 204: deletes topic', () => {
+      return request(app)
+        .delete('/api/topics/mitch')
+        .expect(204);
+    });
   });
-  it('POST 400: returns an error when slug and description are not passed in the request', () => {
-    return request(app)
-      .post('/api/topics')
-      .send({ notslug: 'dogs', description: "I'm allergic to cats" })
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).to.equal('Bad request');
-      });
-  });
-  it('DELETE 204: deletes topic', () => {
-    return request(app)
-    .delete('/api/topics/dogs').expect(204)
-  })
   describe('/users', () => {
     it('GET: 200 returns an array of all users', () => {
       return request(app)
