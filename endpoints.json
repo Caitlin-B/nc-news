@@ -17,6 +17,11 @@
       "topic": [{ "slug": "puzzles", "description": "All about puzzles!" }]
     }
   },
+  "DELETE /api/topics/:slug": {
+    "description": "deletes a topic",
+    "queries": [],
+    "exampleResponse": {}
+  },
   "GET /api/users": {
     "description": "serves an array of all users",
     "queries": [],

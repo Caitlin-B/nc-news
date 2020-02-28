@@ -21,14 +21,17 @@ exports.fetchSpecificTopic = topic => {
   return connection
     .select('*')
     .from('topics')
-    .where('slug', topic)
-    .then(topic => {
-      console.log(topic);
-    });
+    .where('slug', topic);
 };
 
 exports.addTopic = (slug, description) => {
   return connection('topics')
     .insert({ slug, description })
     .returning('*');
+};
+
+exports.removeTopic = slug => {
+  return connection('topics')
+    .where('slug', slug)
+    .del();
 };

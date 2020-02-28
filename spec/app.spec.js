@@ -117,6 +117,10 @@ describe('/api', () => {
         expect(body.msg).to.equal('Bad request');
       });
   });
+  it('DELETE 204: deletes topic', () => {
+    return request(app)
+    .delete('/api/topics/dogs').expect(204)
+  })
   describe('/users', () => {
     it('GET: 200 returns an array of all users', () => {
       return request(app)

@@ -1,9 +1,11 @@
 const topicsRouter = require('express').Router();
-const { getTopics, postTopic } = require('../controllers/topics.controller');
+const { getTopics, postTopic, deleteTopic } = require('../controllers/topics.controller');
 
 topicsRouter
   .route('/')
   .get(getTopics)
-  .post(postTopic);
+  .post(postTopic)
+
+topicsRouter.route('/:slug').delete(deleteTopic)
 
 module.exports = topicsRouter;
