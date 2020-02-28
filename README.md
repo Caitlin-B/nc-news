@@ -5,6 +5,7 @@ NC news is a web application which acts as a resource of news articles, allowing
 Hosted: https://cb-news.herokuapp.com/api
 
 Front-end Github: https://github.com/Caitlin-B/fe-nc-news
+
 Front-end hosted: https://cb-nc-news.netlify.com/
 
 ## Getting started
