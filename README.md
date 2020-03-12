@@ -1,6 +1,6 @@
 # NC news API
 
-NC news is a web application which acts as a resource of news articles, allowing users to create a username, and post and vote on articles and comments under a variety of topics.
+NC news is a web application which acts as a resource of news articles, allowing users to create a password protected account and log in using JSON Web Tokens. Users can then post and vote on articles and comments under a variety of topics. 
 
 Hosted: https://cb-news.herokuapp.com/api
 
